@@ -22,58 +22,33 @@ namespace Alaric.Utils
 
         private readonly StringBuilder _logStringBuilder = new StringBuilder();
 
-        private string _time = "";
+        private string _time
+        {
+            get
+            {
+                string timeString = DateTime.Now.ToString();
+                char[] timeChar = timeString.ToCharArray();
+                timeChar[4] = timeChar[5] != '0' ? '0' : (char) 0;
+                timeChar[6] = timeString[7] != '0' ? '0' : (char) 0;
+                timeString = new string(timeChar);
+                return timeString.Replace(' ', '-').Replace(":", "").Substring(2);
+            }
+        }
 
         private string _fileName;
 
         private string _fileDirectory = "";
 
-        private void GetTime()
-        {
-            _time = DateTime.Now.ToString();
-        }
-
-        private static string TimeStringFormat(string timeString)
-        {
-            char[] timeChar = timeString.ToCharArray();
-            if (timeChar[5] != '0')
-            {
-                timeChar[4] = '0';
-            }
-            else
-            {
-                timeChar[4] = (char)0;
-            }
-            if (timeString[7] != '0')
-            {
-                timeChar[6] = '0';
-            }
-            else
-            {
-                timeChar[6] = (char)0;
-            }
-
-            timeString = new string(timeChar);
-            string result = (timeString.Replace(' ', '-').Replace(":", "")).Substring(2);
-            return result;
-        }
-
         private void Initialize(string logFileName,string customLogFileDirection)
         {
-            if (string.IsNullOrEmpty(logFileName))
-            {
-                throw new Exception("Logger is not initialized.");
-            }
-            if (!customLogFileDirection.EndsWith(@"\"))
-            {
-                GetTime();
-                _fileDirectory = customLogFileDirection + @"\logs\";
-            }
-            else
-            {
-                _fileDirectory = customLogFileDirection;
-            }
-            _fileName = logFileName + "." + TimeStringFormat(_time) + ".log";
+            _fileDirectory = Utilities.OSName == "Windows"
+                ? (!customLogFileDirection.EndsWith(@"\")
+                    ? customLogFileDirection + @"\"
+                    : customLogFileDirection)
+                : (!customLogFileDirection.EndsWith("/")
+                    ? customLogFileDirection + "/"
+                    : customLogFileDirection);
+            _fileName = $"{logFileName}.{_time}.log";
         }
 
         /// <summary>
@@ -82,36 +57,25 @@ namespace Alaric.Utils
         /// <param name="logFileName">The prefix of the log file.</param>
         public Logger(string logFileName)
         {
-            Initialize(logFileName, Directory.GetCurrentDirectory());
+            string path = Directory.GetCurrentDirectory();
+            path = Utilities.OSName == "Windows"
+                ? (path.EndsWith("\\") ? path : path + "\\") + "logs\\"
+                : (path.EndsWith("/") ? path : path + "/") + "logs/";
+            Initialize(logFileName, path);
         }
 
         /// <summary>
         /// Initialize a logger which saves the log files to specified path.
         /// </summary>
         /// <param name="logFileName">The prefix of the log file.</param>
-        /// <param name="customeLogFileDirection">The specified path.</param>
-        public Logger(string logFileName,string customeLogFileDirection)
-        {
-            Initialize(logFileName, customeLogFileDirection);
-        }
-
-        ~Logger()
-        {
-            if (!Directory.Exists(_fileDirectory))
-            {
-                Directory.CreateDirectory(_fileDirectory);
-            }
-            File.AppendAllText(_fileDirectory + _fileName, _logStringBuilder.ToString());
-        }
+        /// <param name="customLogFileDirection">The specified path.</param>
+        public Logger(string logFileName, string customLogFileDirection) => Initialize(logFileName, customLogFileDirection);
 
         /// <summary>
         /// Logs a Exception.
         /// </summary>
         /// <param name="exception">The Exception to be logged.</param>
-        public virtual void Write(Exception exception)
-        {
-            Write(exception.ToString(), "Exception", LogLevel.Error);
-        }
+        public virtual void Write(Exception exception) => Write(exception.ToString(), "Exception", LogLevel.Error);
 
         /// <summary>
         /// Log as you wanted to.
@@ -121,10 +85,9 @@ namespace Alaric.Utils
         /// <param name="level">The severity of the information.</param>
         public virtual void Write(string logInfo,string logObject, LogLevel level)
         {
-            GetTime();
-            _logStringBuilder.AppendLine($"[{_time}] [{logObject}] [{level}]: {logInfo}");
+            _logStringBuilder.AppendLine($"[{DateTime.Now}] [{logObject}] [{level}]: {logInfo}");
 #if DEBUG
-            Console.WriteLine($"[{_time}] [{logObject}] [{level}]: {logInfo}");
+            Console.WriteLine($"[{DateTime.Now}] [{logObject}] [{level}]: {logInfo}");
 #endif
         }
 
@@ -132,9 +95,16 @@ namespace Alaric.Utils
         /// Returns the content of the Logger.
         /// </summary>
         /// <returns>String Logs</returns>
-        public override string ToString()
+        public override string ToString() => _logStringBuilder.ToString();
+
+        /// <summary>
+        /// Save the log file.
+        /// </summary>
+        public virtual void Save()
         {
-            return _logStringBuilder.ToString();
+            if (!Directory.Exists(_fileDirectory))
+                Directory.CreateDirectory(_fileDirectory);
+            File.AppendAllText(_fileDirectory + _fileName, _logStringBuilder.ToString());
         }
     }
 }
