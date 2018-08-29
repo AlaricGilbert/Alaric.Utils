@@ -9,14 +9,21 @@ namespace Alaric.Utils
     public static class Utilities
     {
         /// <summary>
-        /// Get the String represents the enum type element.
+        /// The name of the OS.
         /// </summary>
-        /// <returns>The string.</returns>
-        public static string EnumToString<TEnum>(int value)
+        public static string OSName
         {
-            return Enum.GetName(typeof(TEnum), value);
+            get
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    return "Windows";
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    return "Linux";
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                    return "OSX";
+                return "Unknown";
+            }
         }
-
 
         /// <summary>
         /// Launch a Console window in a WPF/WinForm application.

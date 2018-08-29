@@ -125,11 +125,11 @@ namespace Alaric.Utils
             _logStringBuilder.Append("[");
             _logStringBuilder.Append(_time);
             _logStringBuilder.Append("] [" + logObject + "] [");
-            _logStringBuilder.Append(Utilities.EnumToString<LogLevel>((int)level));
+            _logStringBuilder.Append(Utilities.EnumToString(level));
             _logStringBuilder.Append("]:");
             _logStringBuilder.AppendLine(logInfo);
 #if DEBUG
-            Console.WriteLine("[" + _time + "] [" + logObject + "] [" + Utilities.EnumToString<LogLevel>((int)level) + "]:" + logInfo);
+            Console.WriteLine("[" + _time + "] [" + logObject + "] [" + Utilities.EnumToString(level) + "]:" + logInfo);
 #endif
         }
 
