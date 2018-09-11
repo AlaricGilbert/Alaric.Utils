@@ -8,6 +8,7 @@
     <Copyright>Copyright (c) 2018 许皓钦</Copyright>
     <PackageLicenseUrl>https://github.com/AlaricGilbert/Alaric.Utils/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/AlaricGilbert/Alaric.Utils/</PackageProjectUrl>
+    <ReleaseVersion>0.1.2.0</ReleaseVersion>
   </PropertyGroup>
 
 </Project>
